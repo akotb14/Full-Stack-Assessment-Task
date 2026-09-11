@@ -2,7 +2,7 @@
 
 import { ClockCounterClockwiseIcon } from '@phosphor-icons/react/dist/ssr';
 import type { ReactNode } from 'react';
-import type { TaskActivityEntry } from '@projectflow/shared';
+import type { TaskActivityEntry, UserSummary } from '@projectflow/shared';
 import { Avatar } from '@/components/ui/avatar';
 import { EmptyState } from '@/components/ui/empty-state';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -14,48 +14,44 @@ function Name({ children }: { children: string }) {
 }
 
 /**
- * Turns one entry into a sentence a non-technical reader can follow, rather than
- * exposing the raw `from`/`to` pair. All three assignee transitions get their
- * own wording, and acting on yourself reads as "themselves" instead of
- * repeating your own name twice in the same sentence.
+ * Names the user as seen from the actor's point of view, so someone acting on
+ * their own assignment reads as "themselves" rather than having their name
+ * repeated twice in one sentence.
+ */
+function Party({ user, actor }: { user: UserSummary; actor: UserSummary }) {
+  return user.id === actor.id ? <>themselves</> : <Name>{user.name}</Name>;
+}
+
+/**
+ * Turns one entry into a sentence a non-technical reader can follow, rather
+ * than exposing the raw `from`/`to` pair. All three assignee transitions get
+ * their own wording.
  */
 function describe(entry: TaskActivityEntry): ReactNode {
   const { actor, metadata } = entry;
   const { from, to } = metadata;
 
   if (from === null && to !== null) {
-    return to.id === actor.id ? (
+    return (
       <>
-        <Name>{actor.name}</Name> assigned this task to themselves
-      </>
-    ) : (
-      <>
-        <Name>{actor.name}</Name> assigned this task to <Name>{to.name}</Name>
+        <Name>{actor.name}</Name> assigned <Party user={to} actor={actor} />
       </>
     );
   }
 
   if (from !== null && to === null) {
-    return from.id === actor.id ? (
+    return (
       <>
-        <Name>{actor.name}</Name> removed themselves from this task
-      </>
-    ) : (
-      <>
-        <Name>{actor.name}</Name> removed <Name>{from.name}</Name> from this task
+        <Name>{actor.name}</Name> removed the assignee
       </>
     );
   }
 
   if (from !== null && to !== null) {
-    return to.id === actor.id ? (
+    return (
       <>
-        <Name>{actor.name}</Name> took this task over from <Name>{from.name}</Name>
-      </>
-    ) : (
-      <>
-        <Name>{actor.name}</Name> reassigned this task from <Name>{from.name}</Name> to{' '}
-        <Name>{to.name}</Name>
+        <Name>{actor.name}</Name> changed the assignee from <Party user={from} actor={actor} /> to{' '}
+        <Party user={to} actor={actor} />
       </>
     );
   }
@@ -103,19 +99,19 @@ export function TaskActivityList({ taskId }: { taskId: string }) {
       ) : (
         <ol className="space-y-3">
           {data.items.map((entry) => (
-            <li key={entry.id} className="flex gap-3">
-              <Avatar user={entry.actor} size="sm" className="mt-0.5" />
-              <p className="min-w-0 flex-1 text-[13px] leading-5 text-muted-foreground">
-                {describe(entry)}{' '}
-                {/* The exact timestamp stays available on hover for anyone who needs it. */}
-                <time
-                  dateTime={entry.createdAt}
-                  title={formatDateTime(entry.createdAt)}
-                  className="whitespace-nowrap text-subtle-foreground"
-                >
-                  {formatRelativeTime(entry.createdAt)}
-                </time>
+            <li key={entry.id} className="flex items-start gap-3">
+              <Avatar user={entry.actor} size="sm" className="shrink-0" />
+              <p className="min-w-0 flex-1 text-[13px] leading-6 text-muted-foreground">
+                {describe(entry)}
               </p>
+              {/* The exact timestamp stays available on hover for anyone who needs it. */}
+              <time
+                dateTime={entry.createdAt}
+                title={formatDateTime(entry.createdAt)}
+                className="shrink-0 text-[12px] leading-6 text-subtle-foreground"
+              >
+                {formatRelativeTime(entry.createdAt)}
+              </time>
             </li>
           ))}
         </ol>
