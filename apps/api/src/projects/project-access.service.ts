@@ -2,9 +2,10 @@ import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/commo
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import {
+  canManageProject,
   isElevatedOrganizationRole,
   type OrganizationRole,
-  ProjectRole,
+  type ProjectRole,
 } from '@projectflow/shared';
 import { OrganizationMembersService } from '../organization-members/organization-members.service';
 import { ProjectMembersService } from '../project-members/project-members.service';
@@ -75,8 +76,5 @@ export function canView(context: ProjectAccessContext): boolean {
 }
 
 export function canManage(context: ProjectAccessContext): boolean {
-  return (
-    isElevatedOrganizationRole(context.organizationRole) ||
-    context.projectRole === ProjectRole.PROJECT_MANAGER
-  );
+  return canManageProject(context.organizationRole, context.projectRole);
 }
