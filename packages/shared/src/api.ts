@@ -1,3 +1,4 @@
+import type { TaskActivityType } from './activity';
 import type { OrganizationRole, ProjectRole } from './roles';
 import type { TaskPriority, TaskStatus } from './tasks';
 
@@ -50,6 +51,8 @@ export interface TaskSummary {
   priority: TaskPriority;
   commentCount: number;
   createdBy: UserSummary;
+  /** Null when the task is unassigned. Always a member of the task's project. */
+  assignee: UserSummary | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -57,6 +60,23 @@ export interface TaskSummary {
 export interface TaskDetail extends TaskSummary {
   description?: string | null;
   project: Pick<ProjectSummary, 'id' | 'name' | 'key'>;
+}
+
+/**
+ * One recorded change on a task. `metadata.from`/`metadata.to` are null when the
+ * task was unassigned before/after the change, so all three assignee
+ * transitions are representable.
+ */
+export interface TaskActivityEntry {
+  id: string;
+  type: TaskActivityType;
+  actor: UserSummary;
+  task: Pick<TaskSummary, 'id' | 'key'>;
+  metadata: {
+    from: UserSummary | null;
+    to: UserSummary | null;
+  };
+  createdAt: string;
 }
 
 export interface CommentEntry {
