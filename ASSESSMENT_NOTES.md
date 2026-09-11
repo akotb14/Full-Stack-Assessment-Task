@@ -196,7 +196,8 @@ purely to make number allocation atomic. See `BUG_REPORT.md`.
 - **Two bug fixes** — the cross-project task-modification hole and the task
   numbering race. Both documented in `BUG_REPORT.md`.
 - **Frontend** — an assignee selector on the task detail page and an activity
-  timeline that reads as plain history.
+  timeline that reads as plain history, paged newest-first against the
+  endpoint's own pagination.
 - **Tests** — 48 end-to-end tests across six suites, covering all nine scenarios
   named in the brief.
 
@@ -744,7 +745,8 @@ In priority order.
    feature's day-to-day value, and I left it out only because it changes what
    an existing screen communicates.
 5. **Cursor pagination on the activity feed,** with `nextCursor` in the
-   envelope and infinite scroll on the timeline. The index already supports it.
+   envelope, replacing the timeline's page controls with infinite scroll. The
+   index already supports it.
 6. **Broaden the activity log beyond assignment.** Status transitions,
    priority changes, title edits. The schema was designed for it —
    `TaskActivityType` is an enum with one member — but each type needs its own

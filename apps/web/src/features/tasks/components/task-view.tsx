@@ -72,7 +72,10 @@ export function TaskView({ projectId, taskId }: TaskViewProps) {
 
           <CommentList taskId={taskId} />
 
-          <TaskActivityList taskId={taskId} />
+          {/* Keyed so the timeline's page resets when the reader opens a
+              different task instead of carrying over a page that task may
+              not have. */}
+          <TaskActivityList key={taskId} taskId={taskId} />
         </div>
 
         <aside className="space-y-5 lg:border-l lg:border-border lg:pl-6">

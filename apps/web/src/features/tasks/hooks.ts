@@ -1,6 +1,6 @@
 'use client';
 
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import type {
   Paginated,
   TaskActivityEntry,
@@ -62,11 +62,17 @@ export function useUpdateTaskStatus(taskId: string, projectId: string) {
   });
 }
 
-export function useTaskActivity(taskId: string) {
+/**
+ * One page of history at a time, newest first. The previous page is kept on
+ * screen while the next one loads, so paging reads as a swap rather than
+ * collapsing the section back to a skeleton on every click.
+ */
+export function useTaskActivity(taskId: string, page: number) {
   return useQuery<Paginated<TaskActivityEntry>>({
-    queryKey: queryKeys.taskActivity(taskId),
-    queryFn: () => fetchTaskActivity(taskId),
+    queryKey: queryKeys.taskActivityPage(taskId, page),
+    queryFn: () => fetchTaskActivity(taskId, page),
     enabled: taskId.length > 0,
+    placeholderData: keepPreviousData,
   });
 }
 
@@ -141,7 +147,8 @@ export function useUpdateTaskAssignee(taskId: string, projectId: string) {
 
     // Runs after success and after a rollback, so the server stays the final
     // word either way. Activity is included because a successful change adds
-    // an entry to the timeline.
+    // an entry to the timeline — and the key is the page-less prefix, so every
+    // page the reader has already visited is refreshed, not just page 1.
     onSettled: async () => {
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: queryKeys.task(taskId) }),

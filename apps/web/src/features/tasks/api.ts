@@ -50,12 +50,15 @@ export function updateTaskAssignee(taskId: string, assigneeId: string | null): P
   });
 }
 
-/** The timeline shows recent history only, so one page is enough. */
+/** Entries per page of the timeline. Page 1 holds the newest activity. */
 const ACTIVITY_PAGE_SIZE = 20;
 
-export function fetchTaskActivity(taskId: string): Promise<Paginated<TaskActivityEntry>> {
+export function fetchTaskActivity(
+  taskId: string,
+  page: number,
+): Promise<Paginated<TaskActivityEntry>> {
   return apiRequest<Paginated<TaskActivityEntry>>(`/tasks/${taskId}/activity`, {
-    query: { page: 1, pageSize: ACTIVITY_PAGE_SIZE },
+    query: { page, pageSize: ACTIVITY_PAGE_SIZE },
   });
 }
 
