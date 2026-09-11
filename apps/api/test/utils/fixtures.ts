@@ -106,6 +106,7 @@ export async function createTask(
   number: number,
   title: string,
   createdBy: string,
+  assignee: string | null = null,
 ): Promise<string> {
   const result = await connection.collection('tasks').insertOne({
     projectId: toObjectId(connection, projectId),
@@ -116,8 +117,23 @@ export async function createTask(
     status: TaskStatus.TODO,
     priority: TaskPriority.MEDIUM,
     createdBy: toObjectId(connection, createdBy),
+    assignee: assignee ? toObjectId(connection, assignee) : null,
     createdAt: new Date(),
     updatedAt: new Date(),
   });
   return result.insertedId.toString();
+}
+
+/** Reads raw activity rows so tests can assert on what was persisted. */
+export async function findTaskActivity(
+  connection: Connection,
+  taskId: string,
+): Promise<Array<{ type: string; fromUserId: unknown; toUserId: unknown }>> {
+  return connection
+    .collection('task_activities')
+    .find({ taskId: toObjectId(connection, taskId) })
+    .sort({ createdAt: 1 })
+    .toArray() as unknown as Promise<
+    Array<{ type: string; fromUserId: unknown; toUserId: unknown }>
+  >;
 }
