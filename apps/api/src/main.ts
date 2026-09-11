@@ -11,7 +11,7 @@ async function bootstrap(): Promise<void> {
 
   app.use(helmet());
   app.enableCors({
-    origin: configService.get<string>('WEB_ORIGIN') ?? 'http://localhost:3742',
+    origin: configService.get<string>('WEB_ORIGIN') ,
     credentials: true,
   });
   app.useGlobalPipes(
