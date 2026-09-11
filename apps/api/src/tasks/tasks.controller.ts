@@ -16,6 +16,7 @@ import { toObjectId } from '../common/utils/object-id';
 import { CreateTaskDto } from './dto/create-task.dto';
 import { ListTasksQueryDto } from './dto/list-tasks.dto';
 import { UpdateTaskDto } from './dto/update-task.dto';
+import { UpdateTaskAssigneeDto } from './dto/update-task-assignee.dto';
 import { UpdateTaskStatusDto } from './dto/update-task-status.dto';
 import { TasksService } from './tasks.service';
 
@@ -70,9 +71,27 @@ export class TasksController {
   @Patch('tasks/:taskId/status')
   updateStatus(
     @Param('taskId') taskId: string,
+    @CurrentUser('id') userId: string,
     @Body() dto: UpdateTaskStatusDto,
   ): Promise<TaskDetail> {
-    return this.tasksService.updateStatus(toObjectId(taskId, 'task id'), dto);
+    return this.tasksService.updateStatus(
+      toObjectId(taskId, 'task id'),
+      toObjectId(userId, 'user id'),
+      dto,
+    );
+  }
+
+  @Patch('tasks/:taskId/assignee')
+  updateAssignee(
+    @Param('taskId') taskId: string,
+    @CurrentUser('id') userId: string,
+    @Body() dto: UpdateTaskAssigneeDto,
+  ): Promise<TaskDetail> {
+    return this.tasksService.updateAssignee(
+      toObjectId(taskId, 'task id'),
+      toObjectId(userId, 'user id'),
+      dto,
+    );
   }
 
   @Delete('tasks/:taskId')

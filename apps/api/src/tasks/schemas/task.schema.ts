@@ -36,6 +36,13 @@ export class Task {
   @Prop({ type: Types.ObjectId, ref: 'User', required: true })
   createdBy: Types.ObjectId;
 
+  /**
+   * Who the task is currently assigned to, or null when unassigned. Distinct
+   * from `createdBy`: the creator never changes, the assignee can.
+   */
+  @Prop({ type: Types.ObjectId, ref: 'User', default: null })
+  assignee: Types.ObjectId | null;
+
   createdAt: Date;
   updatedAt: Date;
 }
@@ -43,5 +50,11 @@ export class Task {
 export const TaskSchema = SchemaFactory.createForClass(Task);
 
 TaskSchema.index({ projectId: 1, status: 1 });
-TaskSchema.index({ projectId: 1, number: 1 });
+/**
+ * Unique so a numbering race can never leave two tasks sharing a number. The
+ * application allocates numbers atomically (see `TaskCounter`); this index is
+ * the database-level guarantee behind that.
+ */
+TaskSchema.index({ projectId: 1, number: 1 }, { unique: true });
+TaskSchema.index({ projectId: 1, assignee: 1 });
 TaskSchema.index({ createdAt: -1 });
