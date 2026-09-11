@@ -1,5 +1,6 @@
 import type {
   Paginated,
+  TaskActivityEntry,
   TaskDetail,
   TaskPriority,
   TaskStatus,
@@ -38,6 +39,23 @@ export function updateTaskStatus(taskId: string, status: TaskStatus): Promise<Ta
   return apiRequest<TaskDetail>(`/tasks/${taskId}/status`, {
     method: 'PATCH',
     body: { status },
+  });
+}
+
+/** `null` unassigns the task. */
+export function updateTaskAssignee(taskId: string, assigneeId: string | null): Promise<TaskDetail> {
+  return apiRequest<TaskDetail>(`/tasks/${taskId}/assignee`, {
+    method: 'PATCH',
+    body: { assigneeId },
+  });
+}
+
+/** The timeline shows recent history only, so one page is enough. */
+const ACTIVITY_PAGE_SIZE = 20;
+
+export function fetchTaskActivity(taskId: string): Promise<Paginated<TaskActivityEntry>> {
+  return apiRequest<Paginated<TaskActivityEntry>>(`/tasks/${taskId}/activity`, {
+    query: { page: 1, pageSize: ACTIVITY_PAGE_SIZE },
   });
 }
 
